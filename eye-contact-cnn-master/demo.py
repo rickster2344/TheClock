@@ -8,7 +8,7 @@ import torchvision
 from torchvision import datasets, transforms
 import pandas as pd
 import numpy as np
-    from model import model_static
+from model import model_static
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--video', type=str, help='input video path. live cam is used when not specified')
 parser.add_argument('--face', type=str, help='face detection file path. dlib face detector is used when not specified')
-parser.add_argument('--model_weight', type=str, help='path to model weights file', default='data/model_weights.pkl')
+parser.add_argument('--model_weight', type=str, help='path to model weights file', default='eye-contact-cnn-master/data/model_weights.pkl')
 parser.add_argument('--jitter', type=int, help='jitter bbox n times, and average results', default=0)
 parser.add_argument('-save_vis', help='saves output as video', action='store_true')
 parser.add_argument('-save_text', help='saves output as text', action='store_true')
@@ -28,7 +28,7 @@ parser.add_argument('-display_off', help='do not display frames', action='store_
 
 args = parser.parse_args()
 
-CNN_FACE_MODEL = 'data/mmod_human_face_detector.dat' # from http://dlib.net/files/mmod_human_face_detector.dat.bz2
+CNN_FACE_MODEL = 'eye-contact-cnn-master/data/mmod_human_face_detector.dat' # from http://dlib.net/files/mmod_human_face_detector.dat.bz2
 
 
 def bbox_jitter(bbox_left, bbox_top, bbox_right, bbox_bottom):
@@ -52,14 +52,14 @@ def run(video_path, face_path, model_weight, jitter, vis, display_off, save_text
     # set up vis settings
     red = Color("red")
     colors = list(red.range_to(Color("green"),10))
-    font = ImageFont.truetype("data/arial.ttf", 40)
+    font = ImageFont.truetype("\eye-contact-cnn-master\data/arial.ttf", 40)
 
     # set up video source
     if video_path is None:
         cap = cv2.VideoCapture(0)
-        video_path = 'live.avi'
+        # video_path = 'live.avi'
     else:
-        cap = cv2.VideoCapture(video_path)
+       print('no video capture') # cap = cv2.VideoCapture(video_path)
 
     # set up output file
     if save_text:
@@ -101,11 +101,11 @@ def run(video_path, face_path, model_weight, jitter, vis, display_off, save_text
     # load model weights
     model = model_static(model_weight)
     model_dict = model.state_dict()
-    snapshot = torch.load(model_weight)
+    snapshot = torch.load(model_weight, map_location=torch.device('cpu'))
     model_dict.update(snapshot)
     model.load_state_dict(model_dict)
 
-    model.cuda()
+    model.cpu()
     model.train(False)
 
     # video reading loop
@@ -149,7 +149,7 @@ def run(video_path, face_path, model_weight, jitter, vis, display_off, save_text
                         img = torch.cat([img, img_jittered])
 
                 # forward pass
-                output = model(img.cuda())
+                output = model(img.cpu())
                 if jitter > 0:
                     output = torch.mean(output, 0)
                 score = F.sigmoid(output).item()

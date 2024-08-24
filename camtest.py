@@ -1,27 +1,25 @@
-import cv2 as cv 
-
-def testDevice(source):
-   cap = cv.VideoCapture(source) 
-   cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-
-   if cap is None or not cap.isOpened():
-    print('Warning: unable to open video source: ', source)
-   
-   while(cap.isOpened()): 
-      while True: 
-          
-        ret, img = cap.read() 
-        cv.imshow('img', img) 
-        if cv.waitKey(30) & 0xff == ord('q'): 
-            break
-              
-        cap.release() 
-        cv.destroyAllWindows() 
-   else: 
-      print("Alert ! Camera disconnected") 
-    
-
-# testDevice(0) # no printout
-# testDevice(1)
-testDevice(2)
-# testDevice(3)
+import numpy as np
+import cv2 as cv
+ 
+cap = cv.VideoCapture(0)
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit()
+while True:
+    # Capture frame-by-frame
+    ret, frame = cap.read()
+ 
+    # if frame is read correctly ret is True
+    if not ret:
+        print("Can't receive frame (stream end?). Exiting ...")
+        break
+    # Our operations on the frame come here
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    # Display the resulting frame
+    cv.imshow('frame', gray)
+    if cv.waitKey(1) == ord('q'):
+        break
+ 
+# When everything done, release the capture
+cap.release()
+cv.destroyAllWindows()
