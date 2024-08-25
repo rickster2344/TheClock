@@ -1,8 +1,4 @@
 import cv2
-import pyfirmata as pyf
-
-board = pyf.Arduino('COM3')
-
 
 # from:https://www.youtube.com/watch?v=q9wvP6Li5Xo
 # haar cascades documentation: https://docs.opencv.org/4.0.0/d7/d8b/tutorial_py_face_detection.html 
@@ -28,11 +24,6 @@ while cap.isOpened():
     cv2.imshow('img', img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
-    if (len(faces)> 0):
-        board.digital[13].write(1)
-    else:
-        board.digital[13].write(0)
 
 
 cap.release()
